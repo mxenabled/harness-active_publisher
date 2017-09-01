@@ -14,7 +14,7 @@ describe ::Harness::ActivePublisher do
 
   describe "async_queue_size.active_publisher" do
     it "updates the queue size count" do
-      expect(collector).to receive(:count).with("active_publisher.async_queue_size", 1000)
+      expect(collector).to receive(:gauge).with("active_publisher.async_queue_size", 1000)
       ::ActiveSupport::Notifications.instrument "async_queue_size.active_publisher", 1000
     end
   end
