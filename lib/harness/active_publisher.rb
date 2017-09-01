@@ -1,7 +1,10 @@
 require "harness/active_publisher/version"
 
-::ActiveSupport::Notifications.subscribe "async_queue_size.active_publisher" do |async_queue_size|
-  ::Harness.counter "active_publisher.async_queue_size", async_queue_size
+require "harness"
+require "active_support"
+
+::ActiveSupport::Notifications.subscribe "async_queue_size.active_publisher" do |_, _, _, _, async_queue_size|
+  ::Harness.count "active_publisher.async_queue_size", async_queue_size
 end
 
 ::ActiveSupport::Notifications.subscribe "message_dropped.active_publisher" do
