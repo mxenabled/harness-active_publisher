@@ -21,6 +21,28 @@ describe ::Harness::ActivePublisher do
 
   describe "message_dropped.active_publisher" do
     it "increments the message was dropped counter" do
+      expect(collector).to receive(:increment).with("active_publisher.messages_published")
+      ::ActiveSupport::Notifications.instrument "message_published.active_publisher"
+    end
+
+    it "records the publish latency" do
+      stat = ""
+      duration = 0
+      expect(collector).to receive(:timing) do |the_stat, the_duration|
+        stat = the_stat
+        duration = the_duration
+      end
+
+      ::ActiveSupport::Notifications.instrument "message_published.active_publisher" do
+        sleep 0.1
+      end
+      expect(stat).to eq("active_publisher.publish_latency")
+      expect(duration).to be >= 0.1
+    end
+  end
+
+  describe "message_published.active_publisher" do
+    it "increments the message was dropped counter" do
       expect(collector).to receive(:increment).with("active_publisher.message_dropped")
       ::ActiveSupport::Notifications.instrument "message_dropped.active_publisher"
     end
@@ -38,7 +60,6 @@ describe ::Harness::ActivePublisher do
       ::ActiveSupport::Notifications.instrument "wait_for_async_queue.active_publisher" do
         sleep 0.1
       end
-
       expect(stat).to eq("active_publisher.waiting_for_async_queue")
       expect(duration).to be >= 0.1
     end

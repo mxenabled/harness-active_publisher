@@ -11,6 +11,13 @@ end
   ::Harness.increment "active_publisher.message_dropped"
 end
 
+::ActiveSupport::Notifications.subscribe "message_published.active_publisher" do |*args|
+  ::Harness.increment "active_publisher.messages_published"
+
+  event = ::ActiveSupport::Notifications::Event.new(*args)
+  ::Harness.timing "active_publisher.publish_latency", event.duration
+end
+
 ::ActiveSupport::Notifications.subscribe "wait_for_async_queue.active_publisher" do |*args|
   event = ::ActiveSupport::Notifications::Event.new(*args)
   ::Harness.timing "active_publisher.waiting_for_async_queue", event.duration
