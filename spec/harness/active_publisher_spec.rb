@@ -21,8 +21,20 @@ describe ::Harness::ActivePublisher do
 
   describe "message_dropped.active_publisher" do
     it "increments the message was dropped counter" do
-      expect(collector).to receive(:increment).with("active_publisher.messages_published")
-      ::ActiveSupport::Notifications.instrument "message_published.active_publisher"
+      expect(collector).to receive(:increment).with("active_publisher.message_dropped")
+      ::ActiveSupport::Notifications.instrument "message_dropped.active_publisher"
+    end
+  end
+
+  describe "message_published.active_publisher" do
+    it "increments the message was dropped counter" do
+      expect(collector).to receive(:increment).with("active_publisher.messages_published", 1)
+      ::ActiveSupport::Notifications.instrument("message_published.active_publisher", :message_count => 1) {}
+    end
+
+    it "increments the message was dropped counter by the number provided" do
+      expect(collector).to receive(:increment).with("active_publisher.messages_published", 1000)
+      ::ActiveSupport::Notifications.instrument("message_published.active_publisher", :message_count => 1000) {}
     end
 
     it "records the publish latency" do
@@ -38,13 +50,6 @@ describe ::Harness::ActivePublisher do
       end
       expect(stat).to eq("active_publisher.publish_latency")
       expect(duration).to be >= 0.1
-    end
-  end
-
-  describe "message_published.active_publisher" do
-    it "increments the message was dropped counter" do
-      expect(collector).to receive(:increment).with("active_publisher.message_dropped")
-      ::ActiveSupport::Notifications.instrument "message_dropped.active_publisher"
     end
   end
 

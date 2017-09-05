@@ -12,9 +12,9 @@ end
 end
 
 ::ActiveSupport::Notifications.subscribe "message_published.active_publisher" do |*args|
-  ::Harness.increment "active_publisher.messages_published"
-
   event = ::ActiveSupport::Notifications::Event.new(*args)
+  message_count = event.payload.fetch(:message_count, 1)
+  ::Harness.increment "active_publisher.messages_published", message_count
   ::Harness.timing "active_publisher.publish_latency", event.duration
 end
 
