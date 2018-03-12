@@ -20,7 +20,7 @@ end
 ::ActiveSupport::Notifications.subscribe "message_published.active_publisher" do |*args|
   event = ::ActiveSupport::Notifications::Event.new(*args)
   message_count = event.payload.fetch(:message_count, 1)
-  ::Harness.increment PUBLISHED_METRIC, message_count
+  ::Harness.count PUBLISHED_METRIC, message_count
   ::Harness.timing LATENCY_METRIC, event.duration
 end
 
