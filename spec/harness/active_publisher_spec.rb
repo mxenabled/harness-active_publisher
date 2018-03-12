@@ -28,12 +28,12 @@ describe ::Harness::ActivePublisher do
 
   describe "message_published.active_publisher" do
     it "increments the message was dropped counter" do
-      expect(collector).to receive(:increment).with("active_publisher.messages_published", 1)
+      expect(collector).to receive(:count).with("active_publisher.messages_published", 1)
       ::ActiveSupport::Notifications.instrument("message_published.active_publisher") {}
     end
 
     it "increments the message was dropped counter by the number provided" do
-      expect(collector).to receive(:increment).with("active_publisher.messages_published", 1000)
+      expect(collector).to receive(:count).with("active_publisher.messages_published", 1000)
       ::ActiveSupport::Notifications.instrument("message_published.active_publisher", :message_count => 1000) {}
     end
 
