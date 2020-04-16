@@ -21,8 +21,10 @@ module Harness
 
     ::ActiveSupport::Notifications.subscribe "message_published.active_publisher" do |*args|
       event = ::ActiveSupport::Notifications::Event.new(*args)
+      route = event.payload.fetch(:route, "")
+      route = ".#{route.gsub('.', '-')}" unless route.empty?
       message_count = event.payload.fetch(:message_count, 1)
-      ::Harness.count PUBLISHED_METRIC, message_count
+      ::Harness.count PUBLISHED_METRIC + route, message_count
       ::Harness.timing LATENCY_METRIC, event.duration
     end
 

@@ -27,14 +27,19 @@ describe ::Harness::ActivePublisher do
   end
 
   describe "message_published.active_publisher" do
-    it "increments the message was dropped counter" do
+    it "increments the message was published counter" do
       expect(collector).to receive(:count).with("active_publisher.messages_published", 1)
       ::ActiveSupport::Notifications.instrument("message_published.active_publisher") {}
     end
 
-    it "increments the message was dropped counter by the number provided" do
+    it "increments the messages was published counter by the number provided" do
       expect(collector).to receive(:count).with("active_publisher.messages_published", 1000)
       ::ActiveSupport::Notifications.instrument("message_published.active_publisher", :message_count => 1000) {}
+    end
+
+    it "increments the message was published counter with a specified route" do
+      expect(collector).to receive(:count).with("active_publisher.messages_published.test-route", 1)
+      ::ActiveSupport::Notifications.instrument("message_published.active_publisher", :route => "test.route") {}
     end
 
     it "records the publish latency" do
