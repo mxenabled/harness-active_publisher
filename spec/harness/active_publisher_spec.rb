@@ -19,6 +19,13 @@ describe ::Harness::ActivePublisher do
     end
   end
 
+  describe "redis_async_queue_size.active_publisher" do
+    it "updates the queue size count" do
+      expect(collector).to receive(:gauge).with("active_publisher.redis_async_queue_size", 1000)
+      ::ActiveSupport::Notifications.instrument "redis_async_queue_size.active_publisher", 1000
+    end
+  end
+
   describe "message_dropped.active_publisher" do
     it "increments the message was dropped counter" do
       expect(collector).to receive(:increment).with("active_publisher.message_dropped")
