@@ -19,6 +19,23 @@ describe ::Harness::ActivePublisher do
     end
   end
 
+  describe "connection_blocked.active_publisher" do
+    before { ::ENV["SERVICE_NAME"] = "my_app" }
+    after { ::ENV.delete("SERVICE_NAME") }
+
+    it "increments the connection blocked count" do
+      expect(collector).to receive(:increment).with("active_publisher.my_app.connection.blocked.low_on_memory")
+      ::ActiveSupport::Notifications.instrument("connection_blocked.active_publisher", :reason => "low on memory")
+    end
+  end
+
+  describe "connection_unblocked.active_publisher" do
+    it "increments the connection unblocked count" do
+      expect(collector).to receive(:increment).with("active_publisher.connection.unblocked")
+      ::ActiveSupport::Notifications.instrument("connection_unblocked.active_publisher")
+    end
+  end
+
   describe "redis_async_queue_size.active_publisher" do
     it "updates the queue size count" do
       expect(collector).to receive(:gauge).with("active_publisher.redis_async_queue_size", 1000)
