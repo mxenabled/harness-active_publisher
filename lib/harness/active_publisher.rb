@@ -13,12 +13,14 @@ module Harness
     WAIT_METRIC             = ["active_publisher", ENV["SERVICE_NAME"], "waiting_for_async_queue"].reject(&:nil?).join(".").freeze
     UNBLOCKED_METRIC        = ["active_publisher", ENV["SERVICE_NAME"], "connection", "unblocked"].reject(&:nil?).join(".").freeze
 
+    REASON_IS_MISSING = "reason_for_blocking_is_missing"
+
     ::ActiveSupport::Notifications.subscribe "async_queue_size.active_publisher" do |_, _, _, _, async_queue_size|
       ::Harness.gauge QUEUE_SIZE_METRIC, async_queue_size
     end
 
     ::ActiveSupport::Notifications.subscribe "connection_blocked.active_publisher" do |_, _, _, _, params|
-      reason = params.fetch(:reason)
+      reason = params.fetch(:reason) || REASON_IS_MISSING
       blocked_metric = ["active_publisher", ENV["SERVICE_NAME"], "connection", "blocked", reason.gsub(/\W/, "_")].
         reject(&:nil?).join(".")
 
