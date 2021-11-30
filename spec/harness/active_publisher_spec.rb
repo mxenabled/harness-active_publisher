@@ -103,4 +103,26 @@ describe ::Harness::ActivePublisher do
       expect(duration).to be >= 0.1
     end
   end
+
+  describe "publishes_confirmed.active_publisher" do
+    it "incremenets the publishes_confirmed metric" do
+      expect(collector).to receive(:increment).with("active_publisher.publishes_confirmed")
+      ::ActiveSupport::Notifications.instrument("publishes_confirmed.active_publisher") {}
+    end
+
+    it "records the publishes_confirmed latency" do
+      stat = ""
+      duration = 0
+      expect(collector).to receive(:timing) do |the_stat, the_duration|
+        stat = the_stat
+        duration = the_duration
+      end
+
+      ::ActiveSupport::Notifications.instrument "publishes_confirmed.active_publisher" do
+        sleep 0.1
+      end
+      expect(stat).to eq("active_publisher.publishes_confirmed_latency")
+      expect(duration).to be >= 0.1
+    end
+  end
 end
