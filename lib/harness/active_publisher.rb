@@ -5,13 +5,15 @@ require "active_support"
 
 module Harness
   module ActivePublisher
-    DROPPED_METRIC          = ["active_publisher", ENV["SERVICE_NAME"], "message_dropped"].reject(&:nil?).join(".").freeze
-    LATENCY_METRIC          = ["active_publisher", ENV["SERVICE_NAME"], "publish_latency"].reject(&:nil?).join(".").freeze
-    PUBLISHED_METRIC        = ["active_publisher", ENV["SERVICE_NAME"], "messages_published"].reject(&:nil?).join(".").freeze
-    QUEUE_SIZE_METRIC       = ["active_publisher", ENV["SERVICE_NAME"], "async_queue_size"].reject(&:nil?).join(".").freeze
-    REDIS_QUEUE_SIZE_METRIC = ["active_publisher", ENV["SERVICE_NAME"], "redis_async_queue_size"].reject(&:nil?).join(".").freeze
-    WAIT_METRIC             = ["active_publisher", ENV["SERVICE_NAME"], "waiting_for_async_queue"].reject(&:nil?).join(".").freeze
-    UNBLOCKED_METRIC        = ["active_publisher", ENV["SERVICE_NAME"], "connection", "unblocked"].reject(&:nil?).join(".").freeze
+    DROPPED_METRIC                 = ["active_publisher", ENV["SERVICE_NAME"], "message_dropped"].reject(&:nil?).join(".").freeze
+    LATENCY_METRIC                 = ["active_publisher", ENV["SERVICE_NAME"], "publish_latency"].reject(&:nil?).join(".").freeze
+    PUBLISH_CONFIRM_LATENCY_METRIC = ["active_publisher", ENV["SERVICE_NAME"], "publishes_confirmed_latency"].reject(&:nil?).join(".").freeze
+    PUBLISH_CONFIRMED_METRIC       = ["active_publisher", ENV["SERVICE_NAME"], "publishes_confirmed"].reject(&:nil?).join(".").freeze
+    PUBLISHED_METRIC               = ["active_publisher", ENV["SERVICE_NAME"], "messages_published"].reject(&:nil?).join(".").freeze
+    QUEUE_SIZE_METRIC              = ["active_publisher", ENV["SERVICE_NAME"], "async_queue_size"].reject(&:nil?).join(".").freeze
+    REDIS_QUEUE_SIZE_METRIC        = ["active_publisher", ENV["SERVICE_NAME"], "redis_async_queue_size"].reject(&:nil?).join(".").freeze
+    WAIT_METRIC                    = ["active_publisher", ENV["SERVICE_NAME"], "waiting_for_async_queue"].reject(&:nil?).join(".").freeze
+    UNBLOCKED_METRIC               = ["active_publisher", ENV["SERVICE_NAME"], "connection", "unblocked"].reject(&:nil?).join(".").freeze
 
     REASON_IS_MISSING = "reason_for_blocking_is_missing"
 
@@ -46,6 +48,12 @@ module Harness
       message_count = event.payload.fetch(:message_count, 1)
       ::Harness.count PUBLISHED_METRIC + route, message_count
       ::Harness.timing LATENCY_METRIC, event.duration
+    end
+
+    ::ActiveSupport::Notifications.subscribe "publishes_confirmed.active_publisher" do |*args|
+      event = ::ActiveSupport::Notifications::Event.new(*args)
+      ::Harness.increment PUBLISH_CONFIRMED_METRIC
+      ::Harness.timing PUBLISH_CONFIRM_LATENCY_METRIC, event.duration
     end
 
     ::ActiveSupport::Notifications.subscribe "wait_for_async_queue.active_publisher" do |*args|
